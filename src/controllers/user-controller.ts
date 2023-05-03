@@ -69,4 +69,28 @@ export const UserController = {
             })
         }
     },
+    authMe: async (req: Request, res: Response) => {
+        try {
+            //@ts-ignore
+            const user = await UserModel.findById(req.userId) as IUser
+
+            if (!user) {
+                return res.status(404).json({
+                    message: 'Пользователь не найден'
+                })
+            }
+
+            res.json({
+                _id: user._id,
+                fullName: user.fullName,
+                email: user.email,
+                avatarUrl: user.avatarUrl,
+                token: user.token,
+            })
+        } catch (err) {
+            res.status(404).json({
+                message: 'Нет доступа'
+            })
+        }
+    },
 }
