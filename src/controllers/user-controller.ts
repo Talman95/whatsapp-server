@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import bcrypt from 'bcrypt'
 
-import UserModel from '../models/User'
+import UserModel, {IUser} from '../models/User'
 import { tokenService } from '../services/tokenService'
 
 export const UserController = {
@@ -33,6 +33,39 @@ export const UserController = {
 
             res.status(500).json({
                 message: 'Не удалось зарегестрироваться'
+            })
+        }
+    },
+    login: async (req: Request, res: Response) => {
+        try {
+            const user = await UserModel.findOne({email: req.body.email}) as IUser
+
+            if (!user) {
+                return res.status(404).json({message: 'Пользователь не найден'})
+            }
+
+            const isValidPass = await bcrypt.compare(req.body.password, user.passwordHash)
+
+            if (!isValidPass) {
+                return res.status(400).json({
+                    message: 'Неверный логин или пароль'
+                })
+            }
+
+            const token = tokenService.generateToken(user._id)
+
+            res.json({
+                _id: user._id,
+                fullName: user.fullName,
+                email: user.email,
+                avatarUrl: user.avatarUrl,
+                token,
+            })
+        } catch (err) {
+            console.log(err)
+
+            res.status(500).json({
+                message: 'Не удалось авторизоваться'
             })
         }
     },
