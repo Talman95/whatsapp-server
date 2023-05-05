@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 import mongoose from "mongoose"
 
 import { userRouter } from './routes/user-router'
+import {chatRouter} from "./routes/chat-router";
 
 dotenv.config()
 const PORT = process.env.PORT || 5000
@@ -27,3 +28,4 @@ async function start() {
 start()
 
 app.use('/auth', userRouter)
+app.use('/chats', chatRouter)
