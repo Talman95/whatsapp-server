@@ -5,6 +5,7 @@ import mongoose from "mongoose"
 
 import { userRouter } from './routes/user-router'
 import {chatRouter} from "./routes/chat-router";
+import {messageRouter} from "./routes/message-router";
 
 dotenv.config()
 const PORT = process.env.PORT || 5000
@@ -29,3 +30,4 @@ start()
 
 app.use('/auth', userRouter)
 app.use('/chats', chatRouter)
+app.use('/messages', messageRouter)

@@ -16,7 +16,7 @@ export const chatController = {
 
             const results = await User.populate(chats, {
                 path: 'latestMessage.sender',
-                select: 'fullName, avatarUrl email',
+                select: 'fullName avatarUrl email',
             })
 
             res.status(200).send(results)
@@ -36,7 +36,7 @@ export const chatController = {
                 return res.status(404).send('Пользователь не найден')
             }
 
-            const isChat = await Chat.find({
+            let isChat = await Chat.find({
                 isGroupChat: false,
                 $and: [
                     {users: {$elemMatch: {$eq: authUserId}}},
@@ -45,13 +45,13 @@ export const chatController = {
             }).populate('users', '-passwordHash')
                 .populate('latestMessage')
 
-            const result = await User.populate(isChat, {
+            isChat = await User.populate(isChat, {
                 path: 'latestMessage.sender',
-                select: 'fullName, avatarUrl email',
-            }) as any[]
-
-            if (result.length > 0) {
-                res.send(result[0])
+                select: 'fullName avatarUrl email',
+            }) as any
+            //@ts-ignore
+            if (isChat.length > 0) {
+                res.send(isChat[0])
             } else {
                 const newChat = {
                     chatName: 'sender',
@@ -62,10 +62,9 @@ export const chatController = {
                 const createdChat = await Chat.create(newChat)
 
                 const fullChat = await Chat.findOne({_id: createdChat._id})
-                    .populate('users', '-password')
+                    .populate('users', '-passwordHash')
 
                 res.status(200).send(fullChat)
-
             }
         } catch (e) {
             res.status(404).json({
