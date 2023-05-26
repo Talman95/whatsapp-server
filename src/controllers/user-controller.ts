@@ -1,8 +1,8 @@
-import { Request, Response } from 'express'
+import {Request, Response} from 'express'
 import bcrypt from 'bcrypt'
 
 import UserModel, {IUser} from '../models/User'
-import { tokenService } from '../services/tokenService'
+import {tokenService} from '../services/tokenService'
 
 export const UserController = {
     register: async (req: Request, res: Response) => {
@@ -17,7 +17,7 @@ export const UserController = {
                 passwordHash: hash,
                 fullName: req.body.fullName,
                 avatarUrl: req.body.avatarUrl,
-            })
+            }) as IUser
 
             const token = tokenService.generateToken(user._id.toString())
 
@@ -93,4 +93,23 @@ export const UserController = {
             })
         }
     },
+    getUsersByName: async (req: Request, res: Response) => {
+        const name = req.query.name as string
+        //@ts-ignore
+        const userId = req.userId as string
+
+        const query = req.query.name ? {fullName: {$regex: name.trim(), $options: 'i'}} : {}
+
+        const users = await UserModel.find(query)
+            .find({_id: {$ne: userId}})
+            .sort({updatedAt: -1}) as IUser[]
+
+        const resultUsers = users.map(u => ({
+            _id: u._id,
+            email: u.email,
+            fullName: u.fullName
+        }))
+
+        res.status(200).json(resultUsers)
+    }
 }

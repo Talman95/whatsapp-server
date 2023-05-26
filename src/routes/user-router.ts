@@ -12,3 +12,5 @@ userRouter.post('/register', registerValidator, handleErrors, UserController.reg
 userRouter.post('/login', loginValidation, handleErrors, UserController.login)
 
 userRouter.get('/me', checkAuth, UserController.authMe)
+
+userRouter.get('/users', checkAuth, UserController.getUsersByName)
