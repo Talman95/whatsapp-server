@@ -7,7 +7,6 @@ import { Server } from "socket.io"
 import { userRouter } from './routes/user-router'
 import { chatRouter } from "./routes/chat-router";
 import { messageRouter } from "./routes/message-router";
-import { IUser } from "./models/User";
 
 dotenv.config()
 const PORT = process.env.PORT || 5000
@@ -41,20 +40,23 @@ async function start() {
 
             socket.on('join chat', (room) => {
                 socket.join(room)
-                console.log('Room', room);
+                console.log('Rooms:', room);
             })
 
-            socket.on('new message', (newMessagesReceived) => {
-                const chat = newMessagesReceived.chat
+            socket.on('typing', (room) => {
+                socket.to(room).emit('typing')
+            })
 
-                if (!chat.users) return console.log('chat.users not found')
+            socket.on('stop typing', (room) => {
+                socket.to(room).emit('stop typing')
+            })
 
-                chat.users.forEach((user: IUser & {_id: string}) => {
-                    if (user._id === newMessagesReceived.sender._id) return
+            socket.on('new message', (room, newMessage) => {
+                socket.to(room).emit('message received', newMessage)
+            })
 
-                    socket.in(user._id).emit('message received', newMessagesReceived)
-                })
-
+            socket.on('leave chat', (room) => {
+                socket.leave(room)
             })
         });
 
