@@ -18,6 +18,7 @@ export const messageController = {
       const skippedMessages = (page - 1) * limit
 
       const messages = await Message.find({ chat: chatId })
+        .sort({ createdAt: -1 })
         .skip(skippedMessages)
         .limit(limit)
         .populate('sender', 'fullName avatarUrl email')
